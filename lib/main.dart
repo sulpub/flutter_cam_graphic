@@ -1,4 +1,11 @@
+import 'dart:async';
+import 'dart:convert' show utf8;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_blue/flutter_blue.dart';
+
+FlutterBlue flutterBlue = FlutterBlue.instance;
 
 void main() {
   runApp(const MyApp());
@@ -11,7 +18,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'IoT Sensors',
+      title: 'NGL Sensors',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -72,6 +79,31 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+
+  void _scanBluetoothDevices() {
+    // Start scanning
+    flutterBlue.startScan(timeout: Duration(seconds: 4));
+
+    // Listen to scan results
+    var subscription = flutterBlue.scanResults.listen((results) {
+      // do something with scan results
+      for (ScanResult r in results) {
+        //print('${r.device.name} found! rssi: ${r.rssi}');
+        if('${r.device.name}' == "Sensors NGL")
+        {
+          print('NGL device found');
+          flutterBlue.stopScan();
+          break;
+        }
+      }
+    });
+
+    // Stop scanning
+    flutterBlue.stopScan();
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -113,6 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
               '$_counter',
               style: Theme.of(context).textTheme.headline4,
             ),
+            Image(image: AssetImage('images/ic_launcher.png')),
           ],
         ),
       ),
@@ -148,7 +181,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Icon(
                     Icons.construction,
                 ),
-                onPressed: _decrementCounter,
+                onPressed: _scanBluetoothDevices,
                 heroTag: null,
                 backgroundColor: Colors.grey,
               )
@@ -159,3 +192,5 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
+
