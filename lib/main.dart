@@ -8,6 +8,9 @@ import 'package:flutter_blue/flutter_blue.dart';
 FlutterBlue flutterBlue = FlutterBlue.instance;
 
 void main() {
+  //hide android status bar
+  //SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.bottom]);
+  //SystemChrome..setEnabledSystemUIOverlays([]);
   runApp(const MyApp());
 }
 
@@ -56,6 +59,9 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+
+  // Whether the "A propos" box should be visible
+  bool _visible_a_propos = false;
 
   void _incrementCounter() {
     setState(() {
@@ -113,14 +119,67 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
+
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: const <Widget>[
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: const Color(0xFF778899),
+              ),
+              child: Text(
+                'Options',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.aspect_ratio),
+              title: Text('Graphique'),
+            ),
+            ListTile(
+              leading: Icon(Icons.account_circle),
+              title: Text('Profil'),
+            ),
+            ListTile(
+              leading: Icon(Icons.settings),
+              title: Text('Parametres'),
+            ),
+          ],
+        ),
+      ),
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
+
+        child: AnimatedOpacity(
+          // If the widget is visible, animate to 0.0 (invisible).
+          // If the widget is hidden, animate to 1.0 (fully visible).
+          opacity: _visible_a_propos ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 100),
+            // Logo.
+             child: Container(
+              width: 100.0,
+              height: 100.0,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('images/ic_launcher.png'),
+                  fit: BoxFit.fill,
+                ),
+                shape: BoxShape.rectangle,
+              ),
+            ),
+
+        ),
+        /*
         child: Column(
           // Column is also a layout widget. It takes a list of children and
           // arranges them vertically. By default, it sizes itself to fit its
@@ -148,6 +207,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Image(image: AssetImage('images/ic_launcher.png')),
           ],
         ),
+        */
       ),
 
       /*
@@ -163,19 +223,29 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       */
 
-        floatingActionButton: Row(
+        floatingActionButton: Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
+              /*
               FloatingActionButton.extended(
-                label: const Text('QRCODE'),
+                label: const Text(''),
                 icon: const Icon(Icons.camera),
                 backgroundColor: Colors.blue,
                 onPressed: _incrementCounter,
                 heroTag: null,
               ),
+              */
+              FloatingActionButton(
+                child: Icon(
+                  Icons.camera,
+                ),
+                onPressed: _incrementCounter,
+                heroTag: null,
+                backgroundColor: Colors.blue,
+              ),
               SizedBox(
-                //height: 10,
-                width: 10,
+                height: 10,
+                //width: 10,
               ),
               FloatingActionButton(
                 child: Icon(
@@ -184,8 +254,25 @@ class _MyHomePageState extends State<MyHomePage> {
                 onPressed: _scanBluetoothDevices,
                 heroTag: null,
                 backgroundColor: Colors.grey,
-              )
-
+              ),
+              SizedBox(
+                height: 10,
+                //width: 10,
+              ),
+              FloatingActionButton(
+                child: Icon(
+                  Icons.flip,
+                ),
+                onPressed: () {
+                  // Call setState. This tells Flutter to rebuild the
+                  // UI with the changes.
+                  setState(() {
+                    _visible_a_propos = !_visible_a_propos;
+                  });
+                },
+                heroTag: null,
+                backgroundColor: Colors.grey,
+              ),
             ]
         ),
 
