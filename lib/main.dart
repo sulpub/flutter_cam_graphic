@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'dart:convert' show utf8;
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue/flutter_blue.dart';
+import 'package:oscilloscope/oscilloscope.dart';
+//import 'package:mqtt_client/mqtt_client.dart';
 
 FlutterBlue flutterBlue = FlutterBlue.instance;
 
@@ -55,6 +58,7 @@ class MyHomePage extends StatefulWidget {
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
+
 }
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -62,6 +66,44 @@ class _MyHomePageState extends State<MyHomePage> {
 
   // Whether the "A propos" box should be visible
   bool _visible_a_propos = false;
+
+  List<double> traceSine = [];
+  List<double> traceCosine = [];
+  double radians = 0.0;
+  Timer? _timer;
+
+  /// method to generate a Test  Wave Pattern Sets
+  /// this gives us a value between +1  & -1 for sine & cosine
+  _generateTrace(Timer t) {
+    // generate our  values
+    var sv = 0.3*Random(1)+sin((radians * pi));
+    var cv = 0.3*Random(10)+cos((radians * pi));
+
+    // Add to the growing dataset
+    setState(() {
+      traceSine.add(sv);
+      traceCosine.add(cv);
+    });
+
+    // adjust to recyle the radian value ( as 0 = 2Pi RADS)
+    radians += 0.05;
+    if (radians >= 2.0) {
+      radians = 0.0;
+    }
+  }
+
+  @override
+  initState() {
+    super.initState();
+    // create our timer to generate test values
+    _timer = Timer.periodic(Duration(milliseconds: 60), _generateTrace);
+  }
+
+  @override
+  void dispose() {
+    _timer!.cancel();
+    super.dispose();
+  }
 
   void _incrementCounter() {
     setState(() {
@@ -118,13 +160,43 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
+
+    // Create A Scope Display for Sine
+    Oscilloscope scopeOne = Oscilloscope(
+      showYAxis: true,
+      yAxisColor: Colors.orange,
+      margin: EdgeInsets.all(20.0),
+      strokeWidth: 1.0,
+      backgroundColor: Colors.black,
+      traceColor: Colors.green,
+      yAxisMax: 1.0,
+      yAxisMin: -1.0,
+      dataSet: traceSine,
+    );
+
+    // Create A Scope Display for Cosine
+    Oscilloscope scopeTwo = Oscilloscope(
+      showYAxis: true,
+      margin: EdgeInsets.all(20.0),
+      strokeWidth: 3.0,
+      backgroundColor: Colors.black,
+      traceColor: Colors.yellow,
+      yAxisMax: 1.0,
+      yAxisMin: -1.0,
+      dataSet: traceCosine,
+    );
+
+
     return Scaffold(
 
+      //Application bar
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
+
+      //left menu
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -156,10 +228,13 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
+
+      //main screen
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
         // in the middle of the parent.
 
+        /*
         child: AnimatedOpacity(
           // If the widget is visible, animate to 0.0 (invisible).
           // If the widget is hidden, animate to 1.0 (fully visible).
@@ -179,7 +254,8 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
 
         ),
-        /*
+        */
+
         child: Column(
           // Column is also a layout widget. It takes a list of children and
           // arranges them vertically. By default, it sizes itself to fit its
@@ -198,16 +274,20 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             const Text(
-              'You have pushed the button this many times:',
+              'Scope for visualization',
             ),
+            Expanded(flex: 1, child: scopeOne),
+            Expanded(flex: 1, child: scopeTwo),
+            /*
             Text(
               '$_counter',
               style: Theme.of(context).textTheme.headline4,
             ),
             Image(image: AssetImage('images/ic_launcher.png')),
+            */
           ],
         ),
-        */
+
       ),
 
       /*
